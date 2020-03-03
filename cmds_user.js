@@ -18,6 +18,10 @@ exports.help = (rl) =>
     > uq | qu        ## quiz: update
     > dq | qd        ## quiz: delete
     >
+    > lf | fl | f    ## favourites: list all
+    > cf | fc        ## favourite: create
+    > df | fd        ## favourite: delete
+    >
     > e              ## exit & return to shell`
   )
 
@@ -44,24 +48,33 @@ exports.create = async (rl) => {
   rl.log(`   ${name} created with ${age} years`);
 }
 
-// Show user's age & quizzes
+// Show user's age, quizzes & favourites
 exports.read = async (rl) => {
 
   let name = await rl.questionP("Enter name");
   if (!name) throw new Error("Response can't be empty!");
 
-  let user = await User.findOne(
-    { where: {name},
-      include: [{ model: Quiz, as: 'posts'}]
-    }
-  );
+  let user = await User.findOne({
+    where: {name},
+    include: [
+      { model: Quiz, as: 'posts'},
+      { model: Quiz, as: 'fav',
+        include: [{ model: User, as: 'author'}]
+      }
+    ]
+  });
   if (!user) throw new Error(`  '${name}' is not in DB`);
 
   rl.log(`  ${user.name} is ${user.age} years old`);
 
-  rl.log(`    His quizzes:`)
+  rl.log(`    Quizzes:`)
   user.posts.forEach(
     (quiz) => rl.log(`      ${quiz.question} -> ${quiz.answer} (${quiz.id})`)
+  );
+
+  rl.log(`    Favourite quizzes:`)
+  user.fav.forEach( (quiz) => 
+    rl.log(`      ${quiz.question} -> ${quiz.answer} (${quiz.author.name}, ${quiz.id})`)
   );
 }
 
@@ -86,7 +99,7 @@ exports.update = async (rl) => {
   rl.log(`  ${old_name} updated to ${name}, ${age}`);
 }
 
-// Delete user & his quizzes (with relation: onDelete: 'cascade')
+// Delete user & his quizzes/favourites (relation: onDelete: 'cascade')
 exports.delete = async (rl) => {
 
   let name = await rl.questionP("Enter name");

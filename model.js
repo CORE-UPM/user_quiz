@@ -50,6 +50,20 @@ User.hasMany(Quiz, {
   foreignKey: 'authorId'
 });
 
+// N:N relations default is -> onDelete: 'cascade'
+User.belongsToMany(Quiz, {
+  as: 'fav',
+  foreignKey: 'userId',
+  otherKey: 'quizId',
+  through: 'Favourites'
+});
+Quiz.belongsToMany(User, {
+  as: 'fan',
+  foreignKey: 'quizId',
+  otherKey: 'userId',
+  through: 'Favourites'
+});
+
 
 // Initialize the database
 (async () => {
@@ -57,6 +71,7 @@ User.hasMany(Quiz, {
     await sequelize.sync();
     let count = await User.count();
     let count1 = await Quiz.count();
+    let count2 = await sequelize.models.Favourites.count();
     if (count===0) {
       let c = await User.bulkCreate([
         { name: 'Peter', age: "22"},
@@ -69,10 +84,17 @@ User.hasMany(Quiz, {
         { question: 'Capital of Italy', answer: 'Rome', authorId: 2},
         { question: 'Capital of Russia', answer: 'Moscow', authorId: 3}
       ])
-      process.stdout.write(`  DB created (${c.length} users, ${q.length} quizzes)\n> `);
+      let f = await sequelize.models.Favourites.bulkCreate([
+        { userId: 1, quizId: 3},
+        { userId: 2, quizId: 4},
+        { userId: 2, quizId: 1},
+        { userId: 2, quizId: 2},
+        { userId: 3, quizId: 2}
+      ]);
+      process.stdout.write(`  DB created: (${c.length} users, ${q.length} quizzes, ${f.length} favs)\n> `);
       return;
     } else {
-      process.stdout.write(`  DB exists (${count} users, ${count1} quizzes)\n> `);
+      process.stdout.write(`  DB exists: (${count} users, ${count1} quizzes, ${count2} favs)\n> `);
     };
   } catch (err) {
     console.log(`  ${err}`);
