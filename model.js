@@ -5,6 +5,7 @@ const options = { logging: false};
 const sequelize = new Sequelize("sqlite:db.sqlite", options);
 
 class User extends Model {}
+class Quiz extends Model {}
 
 User.init(
   { name: {
@@ -28,22 +29,50 @@ User.init(
   { sequelize }
 );
 
+Quiz.init(
+  { question: {
+      type: DataTypes.STRING,
+      unique: { msg: "Quiz already exists"}
+    },
+    answer: DataTypes.STRING
+  }, 
+  { sequelize }
+);
+
+
+Quiz.belongsTo(User, {
+  as: 'author', 
+  foreignKey: 'authorId', 
+  onDelete: 'CASCADE'
+});
+User.hasMany(Quiz, {
+  as: 'posts', 
+  foreignKey: 'authorId'
+});
+
 
 // Initialize the database
 (async () => {
   try {
     await sequelize.sync();
     let count = await User.count();
+    let count1 = await Quiz.count();
     if (count===0) {
       let c = await User.bulkCreate([
         { name: 'Peter', age: "22"},
         { name: 'Anna', age: 23},
         { name: 'John', age: 30}
       ]);
-      process.stdout.write(`  DB created with ${c.length} elems\n> `);
+      let q = await Quiz.bulkCreate([
+        { question: 'Capital of Spain', answer: 'Madrid', authorId: 1},
+        { question: 'Capital of France', answer: 'Paris', authorId: 1},
+        { question: 'Capital of Italy', answer: 'Rome', authorId: 2},
+        { question: 'Capital of Russia', answer: 'Moscow', authorId: 3}
+      ])
+      process.stdout.write(`  DB created (${c.length} users, ${q.length} quizzes)\n> `);
       return;
     } else {
-      process.stdout.write(`  DB exists & has ${count} elems\n> `);
+      process.stdout.write(`  DB exists (${count} users, ${count1} quizzes)\n> `);
     };
   } catch (err) {
     console.log(`  ${err}`);
