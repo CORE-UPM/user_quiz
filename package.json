@@ -4,6 +4,10 @@
   "description": "Educational node.js project to start with DBs, sequelize & sockets",
   "main": "main.js",
   "scripts": {
+    "migrate": "sequelize db:migrate --url sqlite://$(pwd)/db.sqlite",
+    "seed": "sequelize db:seed:all --url sqlite://$(pwd)/db.sqlite",
+    "migrate_win": "sequelize db:migrate --url sqlite://%cd%/db.sqlite",
+    "seed_win": "sequelize db:seed:all --url sqlite://%cd%/db.sqlite",
     "start": "node main.js"
   },
   "repository": {
@@ -18,6 +22,7 @@
   "homepage": "https://github.com/CORE-UPM/user_quiz#readme",
   "dependencies": {
     "sequelize": "^5.21.3",
+    "sequelize-cli": "^5.5.0",
     "sqlite3": "^4.0.9"
   }
 }

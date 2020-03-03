@@ -12,10 +12,14 @@ Educational node.js project to start with DBs, sequelize & sockets. The project 
 This branch can be downloaded, installed and run as follows:
 
 ```
-$ git clone -b favourite https://github.com/CORE-UPM/user_quiz
+$ git clone -b migration https://github.com/CORE-UPM/user_quiz
 $ cd user_quiz
 $
 $ npm install
+$
+$ npm run migrate
+$
+$ npm run seed
 $
 $ npm start     ##  or 'node main'
 ....
